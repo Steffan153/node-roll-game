@@ -1,0 +1,12 @@
+{
+  "name": "socket",
+  "version": "1.0.0",
+  "description": "socket.io game",
+  "main": "game.js",
+  "author": "Caleb Miller",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "socket.io": "^2.2.0"
+  }
+}

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Game</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  </head>
+  <body>
+    <div class="container mt-3">
+      <h1>Welcome</h1>
+      <p class="message h3"></p>
+      <div class="input-group">
+        <input type="text" class="form-control" value="Caleb">
+        <div class="input-group-append">
+          <button class="btn btn-primary join">Join</button>
+        </div>
+      </div>
+      <div class="mt-4 mb-1">Players:</div>
+      <div class="output mt-4 list-group"></div>
+    </div>
+    
+    <script>
+      const btn = document.querySelector('.btn.join');
+      let roll;
+      const output = document.querySelector('.output');
+      const message = document.querySelector('.message');
+      const input = document.querySelector('input');
+      const socket = io();
+      
+      btn.addEventListener('click', function() {
+        document.querySelector('h1').textContent = 'Player: ' + input.value;
+        let inputGroup = btn.parentElement.parentElement;
+        let rollBtn = document.createElement('div');
+        rollBtn.className = 'input-group-append';
+        let rollBtnBtn = document.createElement('button');
+        rollBtnBtn.className = 'btn btn-success roll';
+        rollBtnBtn.innerHTML = 'Roll';
+        rollBtn.appendChild(rollBtnBtn);
+        inputGroup.appendChild(rollBtn);
+        roll = document.querySelector('.roll');
+        rollBtnBtn.addEventListener('click', rollClick);
+        btn.parentElement.style.display = 'none';
+        input.style.display = 'none';
+        input.parentElement.className = '';
+        socket.emit('new player', 'player_' + Math.floor(Date.now() * Math.random()), input.value);
+      });
+      function rollClick() {
+        socket.emit('roll');
+        roll.disabled = true;
+      }
+      socket.on('players', players => {
+        message.textContent = players.length > 0 ? `Round ${players[0].round}` : `First round 0`;
+        output.innerHTML = '';
+        for (let player of players) {
+          let el = document.createElement('div');
+          el.className = 'list-group-item';
+          el.textContent = `${player.name}${player.roll ? `, Roll: ${player.roll}` : ', waiting'}`;
+          el.style.color = player.winner ? 'green' : 'black';
+          output.appendChild(el);
+        }
+      });
+      socket.on('inplay', msg => {
+        message.innerHTML = msg;
+        if (roll) roll.disabled = false;
+      });
+    </script>
+  </body>
+</html>
